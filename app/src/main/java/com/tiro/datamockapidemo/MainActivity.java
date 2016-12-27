@@ -2,6 +2,7 @@ package com.tiro.datamockapidemo;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
@@ -37,6 +38,7 @@ public class MainActivity extends Activity {
                 @Override
                 public void onSuccess(List<Task> data) {
                     // show data
+                    Log.d("MOCK", "onSuccess");
                     StringBuilder sb = new StringBuilder("Success：\n");
                     for (int i = 0; i < data.size(); i++) {
                         sb.append(data.get(i).name).append("\n");
@@ -49,6 +51,7 @@ public class MainActivity extends Activity {
                 @Override
                 public void onError(Throwable e) {
                     // show error
+                    Log.d("MOCK", "onError");
                     tv_data.setText("Error：\n" + e.getMessage());
                     requesting = false;
                 }
@@ -56,6 +59,7 @@ public class MainActivity extends Activity {
                 @Override
                 public void onStart() {
                     // show loading
+                    Log.d("MOCK", "onStart");
                     tv_data.setText("Loading...");
                 }
             });

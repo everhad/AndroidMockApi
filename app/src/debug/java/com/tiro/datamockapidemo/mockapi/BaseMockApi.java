@@ -6,13 +6,16 @@ import com.tiro.datamockapidemo.dataapi.DataApiCallback;
 import com.tiro.datamockapidemo.mockapi.IMockApiStrategy.Response;
 
 import java.io.IOException;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import rx.Observable;
 import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Action;
 import rx.functions.Action0;
 import rx.functions.Action1;
+import rx.functions.Func0;
 import rx.schedulers.Schedulers;
 
 /**
@@ -92,20 +95,27 @@ public abstract class BaseMockApi {
 
     /**
      * Give success response, Have data.
-     * @param data
+     * @param dataMethod
      * @param callback
      * @param response
      * @param <T>
      */
-    public <T> void giveSuccessResult(final T data, final DataApiCallback<T> callback, final Response response) {
+    public <T> void giveSuccessResult(final Func0<T> dataMethod, final DataApiCallback<T> callback, final Response response) {
         AndroidSchedulers.mainThread().createWorker().schedule(new Action0() {
             @Override
             public void call() {
-                Observable.just(data)
-                        .delay(response.delayMillis, TimeUnit.MILLISECONDS)
-                        .subscribeOn(Schedulers.io())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(new ApiSubcriber(callback));
+                Observable.create(new Observable.OnSubscribe<T>() {
+                    @Override
+                    public void call(Subscriber<? super T> subscriber) {
+                        Log.d("MOCK", "onNext Thread = " + Thread.currentThread().getName());
+                        subscriber.onNext(dataMethod.call());
+                        subscriber.onCompleted();
+                    }
+                }).
+                delay(response.delayMillis, TimeUnit.MILLISECONDS)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new ApiSubcriber(callback));
             }
         });
     }
